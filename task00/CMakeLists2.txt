@@ -1,0 +1,14 @@
+cmake_minimum_required (VERSION 2.8.11)
+project (Transformation)
+
+find_package(Eigen3 REQUIRED)
+add_executable (Transformation main.cpp)
+target_include_directories(
+  Transformation
+  PRIVATE ${EIGEN3_INCLUDE_DIR}
+)
+
+target_link_libraries(
+  Transformation
+  PRIVATE ${EIGEN3_INCLUDE_DIR}
+)
