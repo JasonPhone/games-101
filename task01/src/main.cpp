@@ -49,11 +49,11 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
   float h = 2 * n * tan(eye_fov / 2.0);
   float w = aspect_ratio * h;
   projection << n, 0, 0, 0, 0, n, 0, 0, 0, 0, n + f, -n * f, 0, 0, 1, 0;
-  std::cout << "proj\n";
+  // std::cout << "proj\n";
   std::cout << projection << std::endl;
   Eigen::Matrix4f ortho = Eigen::Matrix4f::Identity();
   ortho << w / 2, 0, 0, w / 2, 0, h / 2, 0, h / 2, 0, 0, 1, 0, 0, 0, 0, 1;
-  std::cout << "o*p\n";
+  // std::cout << "o*p\n";
   std::cout << (ortho * projection) << std::endl;
   // return ortho * projection;
   return projection;
