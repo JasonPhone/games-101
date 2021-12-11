@@ -28,36 +28,82 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle) {
 
   // correct the ang to rad
   float theta = rotation_angle / 180.0 * MY_PI;
-  model << cos(theta), -sin(theta), 0, 0, sin(theta), cos(theta), 0, 0, 0, 0, 1,
-      0, 0, 0, 0, 1;
+  model << cos(theta), -sin(theta), 0, 0,
+           sin(theta),  cos(theta), 0, 0,
+                    0,           0, 1, 0,
+                    0,           0, 0, 1;
   // std::cout << "model\n";
   // std::cout << model << std::endl;
   return model;
 }
 
+// Eigen::Matrix4f my_proj(float eye_fov, float aspect_ratio,
 Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
                                       float zNear, float zFar) {
   // Students will implement this function
-
-  Eigen::Matrix4f projection = Eigen::Matrix4f::Identity();
-
+  Eigen::Matrix4f to_orthogonal = Eigen::Matrix4f::Identity();
   // TODO: Implement this function
   // Create the projection matrix for the given parameters.
   // Then return it.
   float n = -zNear, f = -zFar;
-  eye_fov = eye_fov / 180 * MY_PI;
-  float h = 2 * n * tan(eye_fov / 2.0);
-  float w = aspect_ratio * h;
-  projection << n, 0, 0, 0, 0, n, 0, 0, 0, 0, n + f, -n * f, 0, 0, 1, 0;
-  // std::cout << "proj\n";
-  std::cout << projection << std::endl;
-  Eigen::Matrix4f ortho = Eigen::Matrix4f::Identity();
-  ortho << w / 2, 0, 0, w / 2, 0, h / 2, 0, h / 2, 0, 0, 1, 0, 0, 0, 0, 1;
-  // std::cout << "o*p\n";
-  std::cout << (ortho * projection) << std::endl;
-  // return ortho * projection;
-  return projection;
+  eye_fov = eye_fov / 180.0 * MY_PI;
+  to_orthogonal << n, 0,     0,      0,
+                   0, n,     0,      0,
+                   0, 0, n + f, -n * f,
+                   0, 0,     1,      0;
+  float ner = n, far = f;
+  float top = abs(ner) * tan(eye_fov / 2), bot = -top;
+  float rit = aspect_ratio * top, lft = -rit;
+
+  Eigen::Matrix4f to_canonical;
+  to_canonical << 2 / (rit - lft),               0,               0, 0,
+                                0, 2 / (top - bot),               0, 0,
+                                0,               0, 2 / (ner - far), 0,
+                                0,               0,               0, 1;
+  // std::cout << "mine\n" << ner << " " << far << " " << top << " " << bot << " " << rit << " " << lft << std::endl;
+  // std::cout << projection << std::endl;
+  // std::cout << "------------\n";
+  // std::cout << to_canonical << std::endl;
+
+  return to_canonical * to_orthogonal;
 }
+
+// Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
+//                                       float zNear, float zFar)
+// {
+//     Eigen::Matrix4f projection = Eigen::Matrix4f::Identity();
+//     float n = -zNear;
+//     float f = -zFar;
+//     float t = std::abs(n) * std::tan(.5f * (eye_fov / 180.0 * M_PI));
+//     float b = -t;
+//     float r = aspect_ratio * t;
+//     float l = -r;
+
+//     Eigen::Matrix4f perspective_to_orthogonal = Eigen::Matrix4f::Identity();
+//     perspective_to_orthogonal(0,0) = n;
+//     perspective_to_orthogonal(1,1) = n;
+//     perspective_to_orthogonal(2,2) = n + f;
+//     perspective_to_orthogonal(2,3) = -f * n;
+//     perspective_to_orthogonal(3,2) = 1;
+//     perspective_to_orthogonal(3,3) = 0;
+
+//     Eigen::Matrix4f scale_to_canonical = Eigen::Matrix4f::Identity();
+//     // std::cout << 2.f / (r - l) << std::endl;
+//     scale_to_canonical(0,0) = 2.f/(r-l);
+//     scale_to_canonical(1,1) = 2.f/(t-b);
+//     scale_to_canonical(2,2) = 2.f/(n-f);
+
+//     Eigen::Matrix4f orthogonal_projection = scale_to_canonical;
+//     projection = orthogonal_projection * perspective_to_orthogonal;
+
+//     std::cout << "right\n" << n << " " << f << " " << t << " " << b << " " << r << " " << l << std::endl;
+//     std::cout << perspective_to_orthogonal << std::endl;
+//     std::cout << "==================\n";
+//     std::cout << scale_to_canonical << std::endl;
+//     my_proj(eye_fov, aspect_ratio, zNear, zFar);
+
+//     return projection;
+// }
 
 int main(int argc, const char** argv) {
   float angle = 0;
